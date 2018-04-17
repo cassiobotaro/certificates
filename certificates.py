@@ -33,7 +33,6 @@ output_directory.mkdir(exist_ok=True)
 
 for participant in participants:
     locals().update(participant)
-    print(locals()['name'])
     new_svg = base_svg.read_text(encoding='utf-8').format(**locals())
     output_filename = output_directory / f'{name}.svg'
     output_svg = Path(output_filename)
