@@ -11,9 +11,9 @@ optional arguments:
 '''
 
 import argparse
+import csv
 import os
 from pathlib import Path
-import csv
 
 parser = argparse.ArgumentParser()
 parser.add_argument('participants',
@@ -24,11 +24,10 @@ args = parser.parse_args()
 
 
 def import_from_csv(csv_filename):
-    with open(csv_filename, 'r') as file:
-        table = csv.reader(file)
-        headers, *body = table
-        for row in body:
-            yield dict(zip(headers, row))
+    with open(csv_filename) as file:
+        table = csv.DictReader(file)
+        for row in table:
+            yield row
 
 
 # svg used as template
@@ -38,7 +37,6 @@ participants = import_from_csv(args.participants)
 # Create output directory if not exists
 output_directory = Path('./output')
 output_directory.mkdir(exist_ok=True)
-
 
 
 for participant in participants:
