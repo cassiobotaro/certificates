@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 '''
+usage: certificates.py [-h] participants template
+
+positional arguments:
+  participants  csv filaname containing participants.
+  template      certificate template in svg format used to build.
+
+optional arguments:
+  -h, --help    show this help message and exit
 '''
 
 import argparse
 import os
 from pathlib import Path
-
-import rows
+import csv
 
 parser = argparse.ArgumentParser()
 parser.add_argument('participants',
@@ -17,8 +24,11 @@ args = parser.parse_args()
 
 
 def import_from_csv(csv_filename):
-    for row in rows.import_from_csv(csv_filename):
-        yield row._asdict()
+    with open(csv_filename, 'r') as file:
+        table = csv.reader(file)
+        headers, *body = table
+        for row in body:
+            yield dict(zip(headers, row))
 
 
 # svg used as template
