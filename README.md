@@ -26,4 +26,5 @@ optional arguments:
 ## Authors
 
 Cássio Botaro [(@cassiobotaro)](https://github.com/cassiobotaro)
+
 Tiago Guimarães [(@tilacog)](https://github.com/tilacog)
