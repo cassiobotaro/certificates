@@ -2,9 +2,9 @@
 
 Script to generate event certificates easily.
 
-## Install
+## Requirements
 
-`pipenv install`
+* Inkscape (`apt install inkscape`)
 
 ## Usage
 
@@ -21,7 +21,7 @@ optional arguments:
 
 ## Examples
 
-`pipenv run python certificates.py participants.csv template.svg`
+`python certificates.py participants.csv template.svg`
 
 ## Authors
 
