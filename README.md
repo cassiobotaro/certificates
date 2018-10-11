@@ -6,6 +6,12 @@ Script to generate event certificates easily.
 
 * Inkscape (`apt install inkscape`)
 
+## How to install certificates
+
+```bash
+python setup.py install
+```
+
 ## Usage
 
 ```
@@ -21,7 +27,7 @@ optional arguments:
 
 ## Examples
 
-`python certificates.py participants.csv template.svg`
+`certificates participants.csv template.svg`
 
 ## Authors
 
