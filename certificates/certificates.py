@@ -9,8 +9,6 @@ positional arguments:
 optional arguments:
   -h, --help    show this help message and exit
 '''
-
-import argparse
 import csv
 import os
 from pathlib import Path
@@ -31,7 +29,6 @@ def make_certificates(args):
     # Create output directory if not exists
     output_directory = Path('./output')
     output_directory.mkdir(exist_ok=True)
-
 
     for participant in participants:
         globals().update(participant)

@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "certificates"
+version = "0.0.2"
+description = "Generate event certificates easily."
+readme = "README.md"
+homepage = "https://github.com/cassiobotaro/certificates"
+authors = ["cassiobotaro <cassiobotaro@gmail.com>"]
+license = "Apache-2.0"
+packages = [{include = "certificates"}]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+certificates = "certificates.__main__:main"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
