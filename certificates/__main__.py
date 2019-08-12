@@ -10,6 +10,12 @@ def main():
     parser.add_argument(
         "template", help="certificate template in svg format used to build"
     )
+    parser.add_argument(
+        "--output",
+        "-o",
+        default="./output",
+        help="destination of the generated certificates",
+    )
     args = parser.parse_args()
     make_certificates(args)
 

@@ -27,7 +27,7 @@ def make_certificates(args):
     # retrieve participants list
     participants = import_from_csv(args.participants)
     # Create output directory if not exists
-    output_directory = Path('./output')
+    output_directory = Path(args.output)
     output_directory.mkdir(exist_ok=True)
 
     for participant in participants:
