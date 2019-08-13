@@ -12,3 +12,9 @@ before_install:
 install: poetry install
 script:
     - python -m pytest
+deploy:
+  provider: pypi
+  user: cassiobotaro
+  password: $PYPIPWD
+  on:
+    tags: true
