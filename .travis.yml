@@ -13,8 +13,8 @@ install: poetry install
 script:
     - python -m pytest
 deploy:
-  provider: pypi
-  user: cassiobotaro
-  password: $PYPIPWD
+  provider: script
+  script: poetry publish -u $PYPIUSR -p $PYPIPWD --build
+  skip_cleanup: true
   on:
     tags: true
