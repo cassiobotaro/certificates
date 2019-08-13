@@ -12,6 +12,7 @@ packages = [{include = "certificates"}]
 python = "^3.6"
 
 [tool.poetry.dev-dependencies]
+pytest-cov = "^2.7"
 
 [tool.poetry.scripts]
 certificates = "certificates.__main__:main"
