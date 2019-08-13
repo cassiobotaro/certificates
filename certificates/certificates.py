@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 '''
-usage: certificates.py [-h] participants template
+usage: certificates [-h] [--output OUTPUT] participants template
 
 positional arguments:
-  participants  csv filaname containing participants.
-  template      certificate template in svg format used to build.
+  participants          csv filaname containing participants
+  template              certificate template in svg format used to build
 
 optional arguments:
-  -h, --help    show this help message and exit
+  -h, --help            show this help message and exit
+  --output OUTPUT, -o OUTPUT
+                        destination of the generated certificates
 '''
 import csv
 import os
