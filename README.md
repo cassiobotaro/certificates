@@ -1,10 +1,14 @@
-#  :mortar_board: Certificates
+#  Certificates
 
 Generate event certificates easily.
 
+## Requirements
+
+* Inkscape (`apt install inkscape`)
+
 ## Installation
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
+Use the package manager [pip](https://pip.pypa.io/en/stable/) to install certificates.
 
 ```bash
 pip install certificates

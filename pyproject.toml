@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "certificates"
-version = "1.0.0"
+version = "1.0.1"
 description = "Generate event certificates easily."
 readme = "README.md"
 homepage = "https://github.com/cassiobotaro/certificates"
