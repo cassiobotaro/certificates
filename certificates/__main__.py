@@ -17,7 +17,7 @@ def main():
         help="destination of the generated certificates",
     )
     args = parser.parse_args()
-    make_certificates(args)
+    make_certificates(args.participants, args.template, args.output)
 
 
 if __name__ == "__main__":

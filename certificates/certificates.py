@@ -23,13 +23,13 @@ def import_from_csv(csv_filename):
             yield row
 
 
-def make_certificates(args):
+def make_certificates(participants_path, template_path, output_path):
     # svg used as template
-    base_svg = Path(args.template)
+    base_svg = Path(template_path)
     # retrieve participants list
-    participants = import_from_csv(args.participants)
+    participants = import_from_csv(participants_path)
     # Create output directory if not exists
-    output_directory = Path(args.output)
+    output_directory = Path(output_path)
     output_directory.mkdir(exist_ok=True)
 
     for participant in participants:
