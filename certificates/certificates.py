@@ -33,9 +33,8 @@ def make_certificates(participants_path, template_path, output_path):
     output_directory.mkdir(exist_ok=True)
 
     for participant in participants:
-        globals().update(participant)
-        new_svg = base_svg.read_text(encoding='utf-8').format(**globals())
-        output_filename = output_directory / f'{name}.svg'
+        new_svg = base_svg.read_text(encoding='utf-8').format(**participant)
+        output_filename = output_directory / f'{participant["name"]}.svg'
         output_svg = Path(output_filename)
         output_svg.write_text(new_svg)
         png_filename = str(output_filename).replace("svg", "png")

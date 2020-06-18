@@ -1,4 +1,6 @@
 import argparse
+import sys
+
 from .certificates import make_certificates
 
 
@@ -17,7 +19,13 @@ def main():
         help="destination of the generated certificates",
     )
     args = parser.parse_args()
-    make_certificates(args.participants, args.template, args.output)
+    try:
+        make_certificates(args.participants, args.template, args.output)
+    except KeyError as missing_column:
+        sys.exit(
+            f"error while formatting certificate: "
+            f"csv is missing {missing_column} column."
+        )
 
 
 if __name__ == "__main__":
