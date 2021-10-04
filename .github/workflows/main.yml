@@ -3,7 +3,7 @@ name: main
 on: [push, pull_request]
 
 jobs:
-  setup:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: ${{ matrix.python }}
       - name: Set up poetry
         uses: abatilo/actions-poetry@v2.1.0
 
@@ -38,10 +38,6 @@ jobs:
         shell: bash
         run: python -m poetry install
 
-  linter:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
       - name: Run isort
         shell: bash
         run: python -m poetry run python -m isort --check .
@@ -53,11 +49,7 @@ jobs:
       - name: Run flake8
         shell: bash
         run: python -m poetry run python -m flake8 . --exclude=.venv
-
-  test:
-    runs-on: ubuntu-latest
-    needs: linter
-    steps:
+        
       - name: Run tests
         shell: bash
         run: python -m poetry run python -m pytest .
