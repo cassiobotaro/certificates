@@ -1,0 +1,48 @@
+name: main
+
+on: [push, pull_request]
+
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Set up poetry
+        uses: abatilo/actions-poetry@v2.1.0
+
+      - name: Configure poetry
+        shell: bash
+        run: python -m poetry config virtualenvs.in-project true
+
+      - name: Set up cache
+        uses: actions/cache@v2
+        id: cache
+        with:
+          path: .venv
+          key: venv-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Ensure cache is healthy
+        if: steps.cache.outputs.cache-hit == 'true'
+        shell: bash
+        run: timeout 10s python -m poetry run pip --version || rm -rf .venv
+
+      - name: Install dependencies
+        shell: bash
+        run: python -m poetry install
+
+      - name: Run isort
+        shell: bash
+        run: python -m poetry run python -m isort --check .
+
+      - name: Run black
+        shell: bash
+        run: python -m poetry run python -m black --check .
+      
+      - name: Run flake8
+        shell: bash
+        run: python -m poetry run python -m flake8 . --exclude=.venv
