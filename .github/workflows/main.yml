@@ -51,4 +51,4 @@ jobs:
 
       - name: Publish to pypi
         shell: bash
-        run: python -m poetry publish --build
+        run: poetry publish --build
