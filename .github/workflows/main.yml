@@ -18,19 +18,15 @@ jobs:
       - run: poetry install
 
       - name: Run isort
-        shell: bash
         run: python -m poetry run python -m isort --check .
 
       - name: Run black
-        shell: bash
         run: python -m poetry run python -m black --check .
       
       - name: Run flake8
-        shell: bash
         run: python -m poetry run python -m flake8 . --exclude=.venv
 
       - name: Run tests
-        shell: bash
         run: python -m poetry run python -m pytest .
   
   release:
