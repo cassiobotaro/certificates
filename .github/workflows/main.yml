@@ -1,6 +1,6 @@
 name: main
 
-on:      
+on:
   push:
     branches:
       - "main"
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.8", "3.9", "3.10"]
+        python: ["3.9", "3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -31,7 +31,7 @@ jobs:
 
       - name: Run black
         run: poetry run python -m black --check .
-      
+
       - name: Run flake8
         run: poetry run python -m flake8 . --exclude=.venv
 
@@ -48,7 +48,7 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v3
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           cache: 'poetry'
       - run: poetry install
 

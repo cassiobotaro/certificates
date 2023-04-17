@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "certificates"
-version = "1.1.0"
+version = "1.2.0"
 description = "Generate event certificates easily."
 readme = "README.md"
 homepage = "https://github.com/cassiobotaro/certificates"
 authors = ["cassiobotaro <cassiobotaro@gmail.com>"]
 license = "Apache-2.0"
-packages = [{include = "certificates"}]
+packages = [{ include = "certificates" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 
 [tool.poetry.dev-dependencies]
 black = "^23.3"
