@@ -26,14 +26,11 @@ jobs:
           cache: 'poetry'
       - run: poetry install
 
-      - name: Run isort
-        run: poetry run python -m isort --check .
-
       - name: Run black
         run: poetry run python -m black --check .
 
-      - name: Run flake8
-        run: poetry run python -m flake8 . --exclude=.venv
+      - name: Run ruff
+        run: poetry run python -m ruff check .
 
       - name: Run tests
         run: poetry run python -m pytest .
