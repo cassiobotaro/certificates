@@ -30,7 +30,7 @@ jobs:
         run: poetry run python -m black --check .
 
       - name: Run ruff
-        run: poetry run python -m ruff -- --check .
+        run: poetry run python -m ruff check .
 
       - name: Run tests
         run: poetry run python -m pytest .
