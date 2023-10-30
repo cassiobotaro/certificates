@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''
+"""
 usage: certificates [-h] [--output OUTPUT] participants template
 
 positional arguments:
@@ -10,7 +10,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --output OUTPUT, -o OUTPUT
                         destination of the generated certificates
-'''
+"""
 import csv
 import os
 from pathlib import Path
@@ -19,8 +19,7 @@ from pathlib import Path
 def import_from_csv(csv_filename):
     with open(csv_filename) as file:
         table = csv.DictReader(file)
-        for row in table:
-            yield row
+        yield from table
 
 
 def make_certificates(participants_path, template_path, output_path):
@@ -37,6 +36,6 @@ def make_certificates(participants_path, template_path, output_path):
         output_filename = output_directory / f'{participant["name"]}.svg'
         output_svg = Path(output_filename)
         output_svg.write_text(new_svg)
-        png_filename = str(output_filename).replace("svg", "png")
+        png_filename = str(output_filename).replace('svg', 'png')
         os.system(f'inkscape -z -e "{png_filename}" "{output_filename}"')
         output_svg.unlink()
