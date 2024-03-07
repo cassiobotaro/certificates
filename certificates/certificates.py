@@ -11,6 +11,7 @@ optional arguments:
   --output OUTPUT, -o OUTPUT
                         destination of the generated certificates
 """
+
 import csv
 import os
 from pathlib import Path
