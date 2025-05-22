@@ -1,17 +1,24 @@
 import subprocess
 import sys
 
+
 def _get_inkscape_version():
-    """Returns the version number as a float (e.g., 1.3) or None if not found."""
+    """Returns the version number as a float or None if not found."""
     try:
-        result = subprocess.run(["inkscape", "--version"], capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            ['inkscape', '--version'],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         version_line = result.stdout.strip()
         # Example: "Inkscape 1.2.2 (732a01da63, 2022-12-09)"
         version_str = version_line.split()[1]
         major_minor = version_str.split('.')[:2]
-        return float(".".join(major_minor))
+        return float('.'.join(major_minor))
     except (subprocess.CalledProcessError, IndexError, ValueError):
         return None
+
 
 def convert_svg_to_png(svg_file, output_file, width=None):
     # ensure svg_file and output_file are strings if Path is used
@@ -21,29 +28,38 @@ def convert_svg_to_png(svg_file, output_file, width=None):
     version = _get_inkscape_version()
 
     if version is None:
-        print("Could not determine Inkscape version. Make sure Inkscape is installed.")
+        print(
+            'Could not determine Inkscape version.'
+            ' Make sure Inkscape is installed.'
+        )
         sys.exit(1)
 
-    print(f"Detected Inkscape version: {version}")
+    print(f'Detected Inkscape version: {version}')
 
     if version >= 1.0:
         # Use modern CLI syntax
-        cmd = ["inkscape", svg_file, "--export-type=png", f"--export-filename={output_file}"]
+        cmd = [
+            'inkscape',
+            svg_file,
+            '--export-type=png',
+            f'--export-filename={output_file}',
+        ]
         if width:
-            cmd.append(f"--export-width={width}")
+            cmd.append(f'--export-width={width}')
     else:
         # Use legacy syntax
-        cmd = ["inkscape", "-z", "-e", output_file]
+        cmd = ['inkscape', '-z', '-e', output_file]
         if width:
-            cmd += ["-w", str(width)]
+            cmd += ['-w', str(width)]
         cmd.append(svg_file)
 
-    print("Running command:", " ".join(cmd))
+    print('Running command:', ' '.join(cmd))
     try:
         subprocess.run(cmd, check=True)
-        print("Export successful!")
+        print('Export successful!')
     except subprocess.CalledProcessError as e:
-        print("Inkscape command failed:", e)
+        print('Inkscape command failed:', e)
 
-if __name__ == "__main__":
-    convert_svg_to_png("example.svg", "output.png", width=1024)
+
+if __name__ == '__main__':
+    convert_svg_to_png('example.svg', 'output.png', width=1024)

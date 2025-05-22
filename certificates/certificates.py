@@ -13,10 +13,10 @@ optional arguments:
 """
 
 import csv
-import os
 from pathlib import Path
 
 from .inkscape_utils import convert_svg_to_png
+
 
 def import_from_csv(csv_filename):
     with open(csv_filename) as file:
