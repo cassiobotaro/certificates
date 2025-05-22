@@ -16,6 +16,7 @@ import csv
 import os
 from pathlib import Path
 
+from .inkscape_utils import convert_svg_to_png
 
 def import_from_csv(csv_filename):
     with open(csv_filename) as file:
@@ -38,5 +39,5 @@ def make_certificates(participants_path, template_path, output_path):
         output_svg = Path(output_filename)
         output_svg.write_text(new_svg)
         png_filename = str(output_filename).replace('svg', 'png')
-        os.system(f'inkscape -z -e "{png_filename}" "{output_filename}"')
+        convert_svg_to_png(output_filename, png_filename)
         output_svg.unlink()
