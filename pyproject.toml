@@ -15,7 +15,7 @@ python = "^3.10"
 certificates = "certificates.__main__:main"
 
 [tool.poetry.group.dev.dependencies]
-pytest-cov = ">=4.1,<7.0"
+pytest-cov = ">=4.1,<8.0"
 pytest = ">=7.4.2,<9.0.0"
 ruff = ">=0.5.0,<0.14.0"
 
