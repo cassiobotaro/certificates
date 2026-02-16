@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13"]
+        python: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v6
       - name: Install poetry
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
-          cache: 'poetry'
+          cache: "poetry"
       - run: poetry install
 
       - name: Run ruff format
@@ -45,8 +45,8 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
-          cache: 'poetry'
+          python-version: "3.14"
+          cache: "poetry"
       - run: poetry install
 
       - name: Configure pypi token
