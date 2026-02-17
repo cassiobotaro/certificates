@@ -1,6 +1,6 @@
 [project]
 name = "certificates"
-version = "2.2.0"
+version = "2.3.0"
 description = "Generate event certificates easily."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -11,7 +11,7 @@ authors = [
 ]
 
 [project.urls]
-Repository = "htts://github.com/cassiobotaro/certificates"
+Repository = "https://github.com/cassiobotaro/certificates"
 
 [project.scripts]
 certificates = "certificates.__main__:main"
