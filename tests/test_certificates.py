@@ -20,7 +20,7 @@ import pytest
 sys.path.insert(
     0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 )
-from certificates.certificates import import_from_csv, make_certificates
+from certificates.builder import import_from_csv, make_certificates
 
 
 @pytest.fixture
@@ -94,7 +94,7 @@ def test_make_certificates(
         Path(png_path).touch()
 
     monkeypatch.setattr(
-        'certificates.certificates.convert_svg_to_png', mock_convert
+        'certificates.builder.convert_svg_to_png', mock_convert
     )
 
     # Run the function to test
@@ -125,7 +125,7 @@ def test_make_certificates_handles_special_chars(
         Path(png_path).touch()
 
     monkeypatch.setattr(
-        'certificates.certificates.convert_svg_to_png', mock_convert
+        'certificates.builder.convert_svg_to_png', mock_convert
     )
 
     # Run the function to test

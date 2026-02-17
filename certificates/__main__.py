@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from .certificates import make_certificates
+from .builder import make_certificates
 
 
 def main():
