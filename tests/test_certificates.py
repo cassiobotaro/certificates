@@ -10,16 +10,11 @@ Tests the following functionality:
 
 import csv
 import os
-import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
-# Add parent directory to path to import certificates module
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-)
 from certificates.builder import import_from_csv, make_certificates
 
 
