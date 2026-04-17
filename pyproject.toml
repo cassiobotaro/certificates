@@ -19,6 +19,9 @@ certificates = "certificates.__main__:main"
 [tool.uv]
 package = true
 
+[tool.setuptools.packages.find]
+include = ["certificates*"]
+
 [tool.ruff]
 line-length = 79
 
