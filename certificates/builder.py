@@ -38,6 +38,6 @@ def make_certificates(participants_path, template_path, output_path):
         output_filename = output_directory / f'{participant["name"]}.svg'
         output_svg = Path(output_filename)
         output_svg.write_text(new_svg)
-        png_filename = str(output_filename).replace('svg', 'png')
+        png_filename = output_filename.with_suffix('.png')
         convert_svg_to_png(output_filename, png_filename)
         output_svg.unlink()
