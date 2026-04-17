@@ -136,3 +136,46 @@ def test_make_certificates_handles_special_chars(
 
     # Cleanup
     os.remove(csv_path)
+
+
+def test_make_certificates_removes_svg(
+    monkeypatch, temp_csv_file, temp_svg_template, temp_output_dir
+):
+    """Test that SVG intermediate files are deleted after PNG generation"""
+
+    def mock_convert(svg_path, png_path):
+        Path(png_path).touch()
+
+    monkeypatch.setattr(
+        'certificates.builder.convert_svg_to_png', mock_convert
+    )
+
+    make_certificates(temp_csv_file, temp_svg_template, temp_output_dir)
+
+    svg_files = list(Path(temp_output_dir).glob('*.svg'))
+    assert svg_files == [], f'SVG files should be deleted: {svg_files}'
+
+
+def test_make_certificates_missing_column(
+    monkeypatch, temp_svg_template, temp_output_dir
+):
+    """Test that make_certificates raises KeyError for missing CSV column"""
+    with tempfile.NamedTemporaryFile(
+        suffix='.csv', delete=False, mode='w', newline=''
+    ) as temp_file:
+        writer = csv.DictWriter(temp_file, fieldnames=['name'])
+        writer.writeheader()
+        writer.writerow({'name': 'John Doe'})
+        csv_path = temp_file.name
+
+    def mock_convert(svg_path, png_path):
+        Path(png_path).touch()
+
+    monkeypatch.setattr(
+        'certificates.builder.convert_svg_to_png', mock_convert
+    )
+
+    with pytest.raises(KeyError):
+        make_certificates(csv_path, temp_svg_template, temp_output_dir)
+
+    os.remove(csv_path)
