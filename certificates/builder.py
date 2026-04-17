@@ -3,7 +3,7 @@
 usage: certificates [-h] [--output OUTPUT] participants template
 
 positional arguments:
-  participants          csv filaname containing participants
+  participants          csv filename containing participants
   template              certificate template in svg format used to build
 
 optional arguments:
