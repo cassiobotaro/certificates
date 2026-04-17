@@ -1,5 +1,4 @@
 import subprocess
-import sys
 
 
 def _get_inkscape_version():
@@ -28,11 +27,10 @@ def convert_svg_to_png(svg_file, output_file, width=None):
     version = _get_inkscape_version()
 
     if version is None:
-        print(
+        raise RuntimeError(
             'Could not determine Inkscape version.'
             ' Make sure Inkscape is installed.'
         )
-        sys.exit(1)
 
     print(f'Detected Inkscape version: {version}')
 

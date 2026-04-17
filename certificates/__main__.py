@@ -26,6 +26,8 @@ def main():
             f'error while formatting certificate: '
             f'csv is missing {missing_column} column.'
         )
+    except RuntimeError as e:
+        sys.exit(f'error: {e}')
 
 
 if __name__ == '__main__':
