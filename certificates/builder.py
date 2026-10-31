@@ -74,8 +74,8 @@ def make_certificates(
     """
     if converter is None:
         converter = Inkscape.detect()
-    # svg used as template
-    base_svg = Path(template_path)
+    # svg used as template, read once and rendered per participant
+    template = Path(template_path).read_text(encoding='utf-8')
     # retrieve participants list
     participants = import_from_csv(participants_path)
     # Create output directory if not exists
@@ -84,9 +84,7 @@ def make_certificates(
 
     used_stems = set()
     for participant in participants:
-        new_svg = base_svg.read_text(encoding='utf-8').format(
-            **_xml_escape_values(participant)
-        )
+        new_svg = template.format(**_xml_escape_values(participant))
         stem = _unique_stem(participant['name'], used_stems)
         output_svg = output_directory / f'{stem}.svg'
         output_svg.write_text(new_svg, encoding='utf-8')
