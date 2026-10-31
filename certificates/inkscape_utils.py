@@ -1,8 +1,16 @@
+import re
 import subprocess
+
+# Example: "Inkscape 1.2.2 (732a01da63, 2022-12-09)"
+_VERSION_PATTERN = re.compile(r'Inkscape\s+(\d+)\.(\d+)')
 
 
 def _get_inkscape_version():
-    """Returns the version number as a float or None if not found."""
+    """Returns the version as a (major, minor) tuple or None if not found.
+
+    A tuple is used instead of a float so that e.g. 1.10 compares greater
+    than 1.2 (as a float, 1.10 == 1.1 < 1.2).
+    """
     try:
         result = subprocess.run(
             ['inkscape', '--version'],
@@ -10,18 +18,13 @@ def _get_inkscape_version():
             text=True,
             check=True,
         )
-        version_line = result.stdout.strip()
-        # Example: "Inkscape 1.2.2 (732a01da63, 2022-12-09)"
-        version_str = version_line.split()[1]
-        major_minor = version_str.split('.')[:2]
-        return float('.'.join(major_minor))
-    except (
-        FileNotFoundError,
-        subprocess.CalledProcessError,
-        IndexError,
-        ValueError,
-    ):
+    except (FileNotFoundError, subprocess.CalledProcessError):
         return None
+
+    match = _VERSION_PATTERN.search(result.stdout)
+    if match is None:
+        return None
+    return int(match[1]), int(match[2])
 
 
 def convert_svg_to_png(svg_file, output_file, width=None):
@@ -37,9 +40,9 @@ def convert_svg_to_png(svg_file, output_file, width=None):
             ' Make sure Inkscape is installed.'
         )
 
-    print(f'Detected Inkscape version: {version}')
+    print('Detected Inkscape version: {}.{}'.format(*version))
 
-    if version >= 1.0:
+    if version >= (1, 0):
         # Use modern CLI syntax
         cmd = [
             'inkscape',

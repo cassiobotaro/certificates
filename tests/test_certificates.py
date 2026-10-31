@@ -10,6 +10,7 @@ Tests the following functionality:
 
 import csv
 import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -189,3 +190,71 @@ def test_convert_svg_to_png_inkscape_not_installed(monkeypatch, tmp_path):
         inkscape_utils.convert_svg_to_png(
             tmp_path / 'in.svg', tmp_path / 'out.png'
         )
+
+
+def _fake_inkscape_version(monkeypatch, stdout):
+    """Make `inkscape --version` return `stdout`; record other commands."""
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        if cmd[:2] == ['inkscape', '--version']:
+            return subprocess.CompletedProcess(cmd, 0, stdout=stdout)
+        calls.append(cmd)
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(inkscape_utils.subprocess, 'run', fake_run)
+    return calls
+
+
+@pytest.mark.parametrize(
+    ('stdout', 'expected'),
+    [
+        ('Inkscape 1.2.2 (732a01da63, 2022-12-09)\n', (1, 2)),
+        ('Inkscape 1.4.3 (0d15f75042, 2025-12-25)\n', (1, 4)),
+        ('Inkscape 0.92.4 (5da689c313, 2019-01-14)\n', (0, 92)),
+        ('Inkscape 1.10 (abc, 2030-01-01)\n', (1, 10)),
+        ('Inkscape 1.0 (4035a4fb49, 2020-05-01)\n', (1, 0)),
+        ('', None),
+        ('garbage output\n', None),
+    ],
+)
+def test_get_inkscape_version(monkeypatch, stdout, expected):
+    """Test that the Inkscape version is parsed as a (major, minor) tuple"""
+    _fake_inkscape_version(monkeypatch, stdout)
+
+    assert inkscape_utils._get_inkscape_version() == expected
+
+
+def test_get_inkscape_version_orders_correctly(monkeypatch):
+    """Test that 1.10 is considered newer than 1.2 (float would say older)"""
+    _fake_inkscape_version(monkeypatch, 'Inkscape 1.10 (abc, 2030-01-01)\n')
+
+    assert inkscape_utils._get_inkscape_version() > (1, 2)
+
+
+def test_convert_svg_to_png_modern_cli(monkeypatch):
+    """Test that Inkscape >= 1.0 uses the --export-* syntax"""
+    calls = _fake_inkscape_version(monkeypatch, 'Inkscape 1.2.2 (x, y)\n')
+
+    inkscape_utils.convert_svg_to_png('in.svg', 'out.png', width=1024)
+
+    assert calls == [
+        [
+            'inkscape',
+            'in.svg',
+            '--export-type=png',
+            '--export-filename=out.png',
+            '--export-width=1024',
+        ]
+    ]
+
+
+def test_convert_svg_to_png_legacy_cli(monkeypatch):
+    """Test that Inkscape < 1.0 uses the -z -e legacy syntax"""
+    calls = _fake_inkscape_version(monkeypatch, 'Inkscape 0.92.4 (x, y)\n')
+
+    inkscape_utils.convert_svg_to_png('in.svg', 'out.png', width=1024)
+
+    assert calls == [
+        ['inkscape', '-z', '-e', 'out.png', '-w', '1024', 'in.svg']
+    ]
