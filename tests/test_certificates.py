@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+from certificates import inkscape_utils
 from certificates.builder import import_from_csv, make_certificates
 
 
@@ -174,3 +175,17 @@ def test_make_certificates_missing_column(
         make_certificates(csv_path, temp_svg_template, temp_output_dir)
 
     os.remove(csv_path)
+
+
+def test_convert_svg_to_png_inkscape_not_installed(monkeypatch, tmp_path):
+    """Test that a missing Inkscape binary raises a friendly RuntimeError"""
+
+    def fake_run(*args, **kwargs):
+        raise FileNotFoundError(2, 'No such file or directory', 'inkscape')
+
+    monkeypatch.setattr(inkscape_utils.subprocess, 'run', fake_run)
+
+    with pytest.raises(RuntimeError, match='Make sure Inkscape is installed'):
+        inkscape_utils.convert_svg_to_png(
+            tmp_path / 'in.svg', tmp_path / 'out.png'
+        )

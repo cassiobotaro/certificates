@@ -15,7 +15,12 @@ def _get_inkscape_version():
         version_str = version_line.split()[1]
         major_minor = version_str.split('.')[:2]
         return float('.'.join(major_minor))
-    except (subprocess.CalledProcessError, IndexError, ValueError):
+    except (
+        FileNotFoundError,
+        subprocess.CalledProcessError,
+        IndexError,
+        ValueError,
+    ):
         return None
 
 
