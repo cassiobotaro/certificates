@@ -52,7 +52,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "PTH", "RUF", "PT"]
 quote-style = "single"
 
 [tool.pytest.ini_options]
-addopts = "--cov=certificates"
+addopts = "--cov=certificates --cov-report=term-missing --cov-fail-under=80"
 testpaths = "tests/"
 
 [dependency-groups]
