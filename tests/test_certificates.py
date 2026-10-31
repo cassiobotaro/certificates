@@ -18,7 +18,11 @@ from xml.etree import ElementTree
 import pytest
 
 from certificates import inkscape_utils
-from certificates.builder import import_from_csv, make_certificates
+from certificates.builder import (
+    _safe_filename,
+    import_from_csv,
+    make_certificates,
+)
 from certificates.inkscape_utils import Inkscape
 
 
@@ -338,3 +342,67 @@ def test_make_certificates_creates_nested_output_dir(
     )
 
     assert (output_dir / 'John Doe.png').exists()
+
+
+def _write_csv(path, names):
+    with open(path, 'w', encoding='utf-8', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['name', 'course'])
+        writer.writeheader()
+        for name in names:
+            writer.writerow({'name': name, 'course': 'Python'})
+    return path
+
+
+@pytest.mark.parametrize(
+    ('name', 'expected'),
+    [
+        ('John Doe', 'John Doe'),
+        ('José García', 'José García'),
+        ('a/b\\c:d*e?f"g<h>i|j', 'a_b_c_d_e_f_g_h_i_j'),
+        ('tab\there', 'tab_here'),
+        ('  padded.  ', 'padded'),
+        ('', 'participant'),
+        ('...', 'participant'),
+    ],
+)
+def test_safe_filename(name, expected):
+    """Test that unsafe chars are replaced and empty names get a default"""
+    assert _safe_filename(name) == expected
+
+
+def test_make_certificates_name_with_slash(
+    fake_converter, temp_svg_template, tmp_path
+):
+    """Test that a '/' in the name does not create a subdirectory"""
+    csv_path = _write_csv(tmp_path / 'p.csv', ['Ana/Maria'])
+    output_dir = tmp_path / 'out'
+
+    make_certificates(
+        csv_path, temp_svg_template, output_dir, converter=fake_converter
+    )
+
+    assert sorted(p.name for p in output_dir.iterdir()) == ['Ana_Maria.png']
+    # the SVG content still carries the original name
+    assert 'Name: Ana/Maria' in fake_converter.svgs['Ana_Maria.png']
+
+
+def test_make_certificates_duplicate_names(
+    fake_converter, temp_svg_template, tmp_path, capsys
+):
+    """Test that repeated names get a numeric suffix instead of overwriting"""
+    csv_path = _write_csv(
+        tmp_path / 'p.csv', ['João Silva', 'João Silva', 'João Silva (2)']
+    )
+    output_dir = tmp_path / 'out'
+
+    make_certificates(
+        csv_path, temp_svg_template, output_dir, converter=fake_converter
+    )
+
+    assert sorted(p.name for p in output_dir.iterdir()) == [
+        'João Silva (2) (2).png',
+        'João Silva (2).png',
+        'João Silva.png',
+    ]
+    assert len(fake_converter.calls) == 3
+    assert 'warning: duplicate name' in capsys.readouterr().out
