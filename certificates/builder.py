@@ -14,14 +14,26 @@ optional arguments:
 
 import csv
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 from .inkscape_utils import Inkscape
+
+# Besides &, < and >, also escape quotes so values are safe inside
+# attributes (e.g. <text aria-label="{name}">), not only in text nodes.
+_XML_QUOTE_ENTITIES = {'"': '&quot;', "'": '&apos;'}
 
 
 def import_from_csv(csv_filename):
     with open(csv_filename) as file:
         table = csv.DictReader(file)
         yield from table
+
+
+def _xml_escape_values(row):
+    """Escape every value of a CSV row so it can be placed inside an SVG."""
+    return {
+        key: escape(value, _XML_QUOTE_ENTITIES) for key, value in row.items()
+    }
 
 
 def make_certificates(
@@ -43,7 +55,9 @@ def make_certificates(
     output_directory.mkdir(exist_ok=True)
 
     for participant in participants:
-        new_svg = base_svg.read_text(encoding='utf-8').format(**participant)
+        new_svg = base_svg.read_text(encoding='utf-8').format(
+            **_xml_escape_values(participant)
+        )
         output_filename = output_directory / f'{participant["name"]}.svg'
         output_svg = Path(output_filename)
         output_svg.write_text(new_svg, encoding='utf-8')

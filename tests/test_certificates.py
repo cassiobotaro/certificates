@@ -13,6 +13,7 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 
@@ -22,13 +23,21 @@ from certificates.inkscape_utils import Inkscape
 
 
 class FakeConverter:
-    """Stand-in for Inkscape: creates an empty PNG and records the calls."""
+    """Stand-in for Inkscape: creates an empty PNG and records the calls.
+
+    The SVG content is captured at export time because make_certificates
+    deletes the intermediate SVG right after converting it.
+    """
 
     def __init__(self):
         self.calls = []
+        self.svgs = {}
 
     def export_png(self, svg_path, png_path):
         self.calls.append((Path(svg_path), Path(png_path)))
+        self.svgs[Path(png_path).name] = Path(svg_path).read_text(
+            encoding='utf-8'
+        )
         Path(png_path).touch()
 
 
@@ -125,7 +134,9 @@ def test_make_certificates_handles_special_chars(
     ) as temp_file:
         writer = csv.DictWriter(temp_file, fieldnames=['name', 'course'])
         writer.writeheader()
-        writer.writerow({'name': 'José García', 'course': 'Python & Data'})
+        writer.writerow(
+            {'name': 'José García', 'course': 'Python & Data <2026> "A\'s"'}
+        )
         csv_path = temp_file.name
 
     make_certificates(
@@ -134,6 +145,17 @@ def test_make_certificates_handles_special_chars(
 
     # Check that PNG file was created with the special character name
     assert os.path.exists(os.path.join(temp_output_dir, 'José García.png'))
+
+    # The generated SVG must be well-formed XML and, once parsed, carry the
+    # original (unescaped) values
+    root = ElementTree.fromstring(fake_converter.svgs['José García.png'])
+    texts = [
+        node.text for node in root.iter('{http://www.w3.org/2000/svg}text')
+    ]
+    assert texts == [
+        'Name: José García',
+        'Course: Python & Data <2026> "A\'s"',
+    ]
 
     # Cleanup
     os.remove(csv_path)
