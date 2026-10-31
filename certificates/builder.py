@@ -1,17 +1,3 @@
-#!/usr/bin/env python
-"""
-usage: certificates [-h] [--output OUTPUT] participants template
-
-positional arguments:
-  participants          csv filename containing participants
-  template              certificate template in svg format used to build
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --output OUTPUT, -o OUTPUT
-                        destination of the generated certificates
-"""
-
 import csv
 import re
 from pathlib import Path
