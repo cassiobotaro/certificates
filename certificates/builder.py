@@ -38,7 +38,7 @@ def _unique_stem(name, used):
 
 
 def import_from_csv(csv_filename):
-    with open(csv_filename, encoding='utf-8', newline='') as file:
+    with Path(csv_filename).open(encoding='utf-8', newline='') as file:
         table = csv.DictReader(file)
         yield from table
 

@@ -46,7 +46,7 @@ module-root = ""
 line-length = 79
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP"]
+select = ["E", "F", "I", "UP", "B", "SIM", "PTH", "RUF", "PT"]
 
 [tool.ruff.format]
 quote-style = "single"

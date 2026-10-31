@@ -50,7 +50,7 @@ def fake_converter():
 
 def _write_csv(path, rows):
     """Write `rows` (dicts sharing the same keys) to `path` as CSV."""
-    with open(path, 'w', encoding='utf-8', newline='') as file:
+    with path.open('w', encoding='utf-8', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
