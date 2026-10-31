@@ -24,7 +24,7 @@ _XML_QUOTE_ENTITIES = {'"': '&quot;', "'": '&apos;'}
 
 
 def import_from_csv(csv_filename):
-    with open(csv_filename) as file:
+    with open(csv_filename, encoding='utf-8', newline='') as file:
         table = csv.DictReader(file)
         yield from table
 
@@ -52,7 +52,7 @@ def make_certificates(
     participants = import_from_csv(participants_path)
     # Create output directory if not exists
     output_directory = Path(output_path)
-    output_directory.mkdir(exist_ok=True)
+    output_directory.mkdir(parents=True, exist_ok=True)
 
     for participant in participants:
         new_svg = base_svg.read_text(encoding='utf-8').format(

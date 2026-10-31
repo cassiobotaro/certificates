@@ -310,3 +310,31 @@ def test_export_png_failure(monkeypatch):
 
     with pytest.raises(RuntimeError, match='Inkscape command failed'):
         Inkscape((1, 2)).export_png('in.svg', 'out.png')
+
+
+def test_import_from_csv_multiline_field(tmp_path):
+    """Test that quoted fields with embedded newlines are read intact"""
+    csv_path = tmp_path / 'participants.csv'
+    csv_path.write_text(
+        'name,course\r\n"John Doe","Python\r\nProgramming"\r\n',
+        encoding='utf-8',
+    )
+
+    participants = list(import_from_csv(csv_path))
+
+    assert participants == [
+        {'name': 'John Doe', 'course': 'Python\r\nProgramming'}
+    ]
+
+
+def test_make_certificates_creates_nested_output_dir(
+    fake_converter, temp_csv_file, temp_svg_template, tmp_path
+):
+    """Test that a nested, non-existent output path is created"""
+    output_dir = tmp_path / 'events' / '2026' / 'certificates'
+
+    make_certificates(
+        temp_csv_file, temp_svg_template, output_dir, converter=fake_converter
+    )
+
+    assert (output_dir / 'John Doe.png').exists()
