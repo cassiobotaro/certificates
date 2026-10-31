@@ -16,11 +16,13 @@ Repository = "https://github.com/cassiobotaro/certificates"
 [project.scripts]
 certificates = "certificates.__main__:main"
 
-[tool.uv]
-package = true
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
 
-[tool.setuptools.packages.find]
-include = ["certificates*"]
+[tool.uv.build-backend]
+# flat layout: the package lives in ./certificates, not ./src/certificates
+module-root = ""
 
 [tool.ruff]
 line-length = 79
