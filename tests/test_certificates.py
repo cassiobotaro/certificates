@@ -18,6 +18,23 @@ import pytest
 
 from certificates import inkscape_utils
 from certificates.builder import import_from_csv, make_certificates
+from certificates.inkscape_utils import Inkscape
+
+
+class FakeConverter:
+    """Stand-in for Inkscape: creates an empty PNG and records the calls."""
+
+    def __init__(self):
+        self.calls = []
+
+    def export_png(self, svg_path, png_path):
+        self.calls.append((Path(svg_path), Path(png_path)))
+        Path(png_path).touch()
+
+
+@pytest.fixture
+def fake_converter():
+    return FakeConverter()
 
 
 @pytest.fixture
@@ -81,21 +98,15 @@ def test_import_from_csv(temp_csv_file):
 
 
 def test_make_certificates(
-    monkeypatch, temp_csv_file, temp_svg_template, temp_output_dir
+    fake_converter, temp_csv_file, temp_svg_template, temp_output_dir
 ):
     """Test that make_certificates generates SVG and PNG files correctly"""
-
-    # Mock the convert_svg_to_png function to avoid actual Inkscape dependency
-    def mock_convert(svg_path, png_path):
-        # Just create an empty file to simulate PNG creation
-        Path(png_path).touch()
-
-    monkeypatch.setattr(
-        'certificates.builder.convert_svg_to_png', mock_convert
+    make_certificates(
+        temp_csv_file,
+        temp_svg_template,
+        temp_output_dir,
+        converter=fake_converter,
     )
-
-    # Run the function to test
-    make_certificates(temp_csv_file, temp_svg_template, temp_output_dir)
 
     # Check that PNG files were created for each participant
     expected_files = ['John Doe.png', 'Jane Smith.png']
@@ -105,7 +116,7 @@ def test_make_certificates(
 
 
 def test_make_certificates_handles_special_chars(
-    monkeypatch, temp_svg_template, temp_output_dir
+    fake_converter, temp_svg_template, temp_output_dir
 ):
     """Test that make_certificates handles special characters"""
     # Create a CSV with special characters
@@ -117,16 +128,9 @@ def test_make_certificates_handles_special_chars(
         writer.writerow({'name': 'José García', 'course': 'Python & Data'})
         csv_path = temp_file.name
 
-    # Mock the convert_svg_to_png function
-    def mock_convert(svg_path, png_path):
-        Path(png_path).touch()
-
-    monkeypatch.setattr(
-        'certificates.builder.convert_svg_to_png', mock_convert
+    make_certificates(
+        csv_path, temp_svg_template, temp_output_dir, converter=fake_converter
     )
-
-    # Run the function to test
-    make_certificates(csv_path, temp_svg_template, temp_output_dir)
 
     # Check that PNG file was created with the special character name
     assert os.path.exists(os.path.join(temp_output_dir, 'José García.png'))
@@ -136,25 +140,22 @@ def test_make_certificates_handles_special_chars(
 
 
 def test_make_certificates_removes_svg(
-    monkeypatch, temp_csv_file, temp_svg_template, temp_output_dir
+    fake_converter, temp_csv_file, temp_svg_template, temp_output_dir
 ):
     """Test that SVG intermediate files are deleted after PNG generation"""
-
-    def mock_convert(svg_path, png_path):
-        Path(png_path).touch()
-
-    monkeypatch.setattr(
-        'certificates.builder.convert_svg_to_png', mock_convert
+    make_certificates(
+        temp_csv_file,
+        temp_svg_template,
+        temp_output_dir,
+        converter=fake_converter,
     )
-
-    make_certificates(temp_csv_file, temp_svg_template, temp_output_dir)
 
     svg_files = list(Path(temp_output_dir).glob('*.svg'))
     assert svg_files == [], f'SVG files should be deleted: {svg_files}'
 
 
 def test_make_certificates_missing_column(
-    monkeypatch, temp_svg_template, temp_output_dir
+    fake_converter, temp_svg_template, temp_output_dir
 ):
     """Test that make_certificates raises KeyError for missing CSV column"""
     with tempfile.NamedTemporaryFile(
@@ -165,20 +166,46 @@ def test_make_certificates_missing_column(
         writer.writerow({'name': 'John Doe'})
         csv_path = temp_file.name
 
-    def mock_convert(svg_path, png_path):
-        Path(png_path).touch()
-
-    monkeypatch.setattr(
-        'certificates.builder.convert_svg_to_png', mock_convert
-    )
-
     with pytest.raises(KeyError):
-        make_certificates(csv_path, temp_svg_template, temp_output_dir)
+        make_certificates(
+            csv_path,
+            temp_svg_template,
+            temp_output_dir,
+            converter=fake_converter,
+        )
 
     os.remove(csv_path)
 
 
-def test_convert_svg_to_png_inkscape_not_installed(monkeypatch, tmp_path):
+def _fake_inkscape(monkeypatch, version_stdout):
+    """Make `inkscape --version` return `version_stdout`; record all calls."""
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        if cmd[:2] == ['inkscape', '--version']:
+            return subprocess.CompletedProcess(cmd, 0, stdout=version_stdout)
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(inkscape_utils.subprocess, 'run', fake_run)
+    return calls
+
+
+def test_make_certificates_detects_inkscape_once(
+    monkeypatch, temp_csv_file, temp_svg_template, temp_output_dir
+):
+    """Test that `inkscape --version` runs once, not once per participant"""
+    calls = _fake_inkscape(monkeypatch, 'Inkscape 1.2.2 (x, y)\n')
+
+    make_certificates(temp_csv_file, temp_svg_template, temp_output_dir)
+
+    version_calls = [c for c in calls if c[:2] == ['inkscape', '--version']]
+    export_calls = [c for c in calls if '--export-type=png' in c]
+    assert len(version_calls) == 1
+    assert len(export_calls) == 2
+
+
+def test_detect_inkscape_not_installed(monkeypatch):
     """Test that a missing Inkscape binary raises a friendly RuntimeError"""
 
     def fake_run(*args, **kwargs):
@@ -187,23 +214,7 @@ def test_convert_svg_to_png_inkscape_not_installed(monkeypatch, tmp_path):
     monkeypatch.setattr(inkscape_utils.subprocess, 'run', fake_run)
 
     with pytest.raises(RuntimeError, match='Make sure Inkscape is installed'):
-        inkscape_utils.convert_svg_to_png(
-            tmp_path / 'in.svg', tmp_path / 'out.png'
-        )
-
-
-def _fake_inkscape_version(monkeypatch, stdout):
-    """Make `inkscape --version` return `stdout`; record other commands."""
-    calls = []
-
-    def fake_run(cmd, **kwargs):
-        if cmd[:2] == ['inkscape', '--version']:
-            return subprocess.CompletedProcess(cmd, 0, stdout=stdout)
-        calls.append(cmd)
-        return subprocess.CompletedProcess(cmd, 0)
-
-    monkeypatch.setattr(inkscape_utils.subprocess, 'run', fake_run)
-    return calls
+        Inkscape.detect()
 
 
 @pytest.mark.parametrize(
@@ -214,29 +225,36 @@ def _fake_inkscape_version(monkeypatch, stdout):
         ('Inkscape 0.92.4 (5da689c313, 2019-01-14)\n', (0, 92)),
         ('Inkscape 1.10 (abc, 2030-01-01)\n', (1, 10)),
         ('Inkscape 1.0 (4035a4fb49, 2020-05-01)\n', (1, 0)),
-        ('', None),
-        ('garbage output\n', None),
     ],
 )
-def test_get_inkscape_version(monkeypatch, stdout, expected):
+def test_detect_inkscape_version(monkeypatch, stdout, expected):
     """Test that the Inkscape version is parsed as a (major, minor) tuple"""
-    _fake_inkscape_version(monkeypatch, stdout)
+    _fake_inkscape(monkeypatch, stdout)
 
-    assert inkscape_utils._get_inkscape_version() == expected
+    assert Inkscape.detect().version == expected
 
 
-def test_get_inkscape_version_orders_correctly(monkeypatch):
+@pytest.mark.parametrize('stdout', ['', 'garbage output\n'])
+def test_detect_inkscape_unexpected_output(monkeypatch, stdout):
+    """Test that unparseable `--version` output raises RuntimeError"""
+    _fake_inkscape(monkeypatch, stdout)
+
+    with pytest.raises(RuntimeError, match='Unexpected output'):
+        Inkscape.detect()
+
+
+def test_detect_inkscape_version_orders_correctly(monkeypatch):
     """Test that 1.10 is considered newer than 1.2 (float would say older)"""
-    _fake_inkscape_version(monkeypatch, 'Inkscape 1.10 (abc, 2030-01-01)\n')
+    _fake_inkscape(monkeypatch, 'Inkscape 1.10 (abc, 2030-01-01)\n')
 
-    assert inkscape_utils._get_inkscape_version() > (1, 2)
+    assert Inkscape.detect().version > (1, 2)
 
 
-def test_convert_svg_to_png_modern_cli(monkeypatch):
+def test_export_png_modern_cli(monkeypatch):
     """Test that Inkscape >= 1.0 uses the --export-* syntax"""
-    calls = _fake_inkscape_version(monkeypatch, 'Inkscape 1.2.2 (x, y)\n')
+    calls = _fake_inkscape(monkeypatch, '')
 
-    inkscape_utils.convert_svg_to_png('in.svg', 'out.png', width=1024)
+    Inkscape((1, 2)).export_png('in.svg', 'out.png', width=1024)
 
     assert calls == [
         [
@@ -249,12 +267,24 @@ def test_convert_svg_to_png_modern_cli(monkeypatch):
     ]
 
 
-def test_convert_svg_to_png_legacy_cli(monkeypatch):
+def test_export_png_legacy_cli(monkeypatch):
     """Test that Inkscape < 1.0 uses the -z -e legacy syntax"""
-    calls = _fake_inkscape_version(monkeypatch, 'Inkscape 0.92.4 (x, y)\n')
+    calls = _fake_inkscape(monkeypatch, '')
 
-    inkscape_utils.convert_svg_to_png('in.svg', 'out.png', width=1024)
+    Inkscape((0, 92)).export_png('in.svg', 'out.png', width=1024)
 
     assert calls == [
         ['inkscape', '-z', '-e', 'out.png', '-w', '1024', 'in.svg']
     ]
+
+
+def test_export_png_failure(monkeypatch):
+    """Test that a failing export is reported as RuntimeError"""
+
+    def fake_run(cmd, **kwargs):
+        raise subprocess.CalledProcessError(1, cmd)
+
+    monkeypatch.setattr(inkscape_utils.subprocess, 'run', fake_run)
+
+    with pytest.raises(RuntimeError, match='Inkscape command failed'):
+        Inkscape((1, 2)).export_png('in.svg', 'out.png')

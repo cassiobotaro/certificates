@@ -15,7 +15,7 @@ optional arguments:
 import csv
 from pathlib import Path
 
-from .inkscape_utils import convert_svg_to_png
+from .inkscape_utils import Inkscape
 
 
 def import_from_csv(csv_filename):
@@ -24,7 +24,16 @@ def import_from_csv(csv_filename):
         yield from table
 
 
-def make_certificates(participants_path, template_path, output_path):
+def make_certificates(
+    participants_path, template_path, output_path, converter=None
+):
+    """Generate one PNG certificate per participant.
+
+    `converter` is any object with an `export_png(svg, png)` method;
+    by default the installed Inkscape is detected once and reused.
+    """
+    if converter is None:
+        converter = Inkscape.detect()
     # svg used as template
     base_svg = Path(template_path)
     # retrieve participants list
@@ -39,5 +48,5 @@ def make_certificates(participants_path, template_path, output_path):
         output_svg = Path(output_filename)
         output_svg.write_text(new_svg, encoding='utf-8')
         png_filename = output_filename.with_suffix('.png')
-        convert_svg_to_png(output_filename, png_filename)
+        converter.export_png(output_filename, png_filename)
         output_svg.unlink()
