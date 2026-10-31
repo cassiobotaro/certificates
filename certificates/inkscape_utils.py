@@ -1,14 +1,10 @@
 import re
 import subprocess
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Self
 
 # Example: "Inkscape 1.2.2 (732a01da63, 2022-12-09)"
 _VERSION_PATTERN = re.compile(r'Inkscape\s+(\d+)\.(\d+)')
 
 
-@dataclass(frozen=True)
 class Inkscape:
     """A detected Inkscape installation able to export SVG files to PNG.
 
@@ -18,10 +14,11 @@ class Inkscape:
     1.10 compares greater than 1.2.
     """
 
-    version: tuple[int, int]
+    def __init__(self, version):
+        self.version = version
 
     @classmethod
-    def detect(cls) -> Self:
+    def detect(cls):
         """Run `inkscape --version` and build an instance from its output.
 
         Raises RuntimeError if Inkscape is not installed or its version
@@ -51,12 +48,7 @@ class Inkscape:
         print('Detected Inkscape version: {}.{}'.format(*inkscape.version))
         return inkscape
 
-    def export_png(
-        self,
-        svg_file: str | Path,
-        output_file: str | Path,
-        width: int | None = None,
-    ) -> None:
+    def export_png(self, svg_file, output_file, width=None):
         """Export `svg_file` to `output_file` as PNG."""
         svg_file = str(svg_file)
         output_file = str(output_file)
